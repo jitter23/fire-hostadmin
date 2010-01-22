@@ -1,0 +1,5 @@
+content   hostadmin                 chrome/content/
+skin      hostadmin   classic/1.0   chrome/skin/
+locale    hostadmin   en-US         chrome/locale/en-US/
+
+overlay	  chrome://browser/content/browser.xul   chrome://hostadmin/content/hostadmin.xul
