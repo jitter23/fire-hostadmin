@@ -1,0 +1,23 @@
+简易编译README
+
+我使用的编译工具 Microsoft Visual C++ 2008 Express
+
+1 下载 XULRunner SDK 2.0+ (Firefox 4.0)
+https://developer.mozilla.org/en/gecko_sdk
+
+2 生成 .xpt 和 .h
+使用 sdk/bin/xpidl.exe 
+
+xpidl.exe -m typelib -I/path/to/sdk/idl hostadmin.idl
+xpidl.exe -m header -I/path/to/sdk/idl hostadmin.idl
+
+3 将hostadmin.h 和 hostadmin.cpp 导入到你的工程
+* 将sdk/include 添加到你的工程的include路径
+* 将sdk/lib 添加到你的工程库目录
+* 添加 nspr4.lib xpcom.lib xpcomglue_s_nomozalloc.lib 到依赖中
+* 添加定义 MOZ_NO_MOZALLOC
+
+4 have fun
+
+-----------我的 VC 2008 的命令行 仅供参考 (我的SDK 是相对于工程的)
+/OUT:"Z:\hostadmin.dll\hostadmin\Release\hostadmin.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:"..\..\lib" /DLL /MANIFEST /MANIFESTFILE:"Release\hostadmin.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"Z:\hostadmin.dll\hostadmin\Release\hostadmin.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /DYNAMICBASE /NXCOMPAT /MACHINE:X86 /ERRORREPORT:PROMPT nspr4.lib xpcom.lib xpcomglue_s_nomozalloc.lib  kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib
