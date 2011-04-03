@@ -148,10 +148,11 @@ var hostAdmin = (function(){
 		if (os == "WINNT"){
 			charset = "gbk";
 			try {
-				var hs = Components.classes["@phpsix.net/hostadmin;1"].createInstance(Components.interfaces.IhostAdmin);
+				var hs = Components.classes["@phpsix.net/hostadmin;1"].createInstance(Ci.IhostAdmin);
 				file_name = hs.getHostPath();
 			}
 			catch (err) {
+				//alert(err);
 				//alert("use default");
 				file_name = "C:\\windows\\system32\\drivers\\etc\\hosts";
 			}
@@ -192,10 +193,11 @@ var hostAdmin = (function(){
 			hosts = {};
 			//read
 			var host = host_file_wrapper.get();
+			host += "\n";
 			
 			var l_p = 0; //pointer to line
-			
-			while(l = /(.*?)\r?\n/g.exec(host)){
+			regx = /(.*?)\r?\n/mg
+			while(l = regx.exec(host)){
 				l = l[0];
 				
 				lines[l_p++] = l;
@@ -297,21 +299,16 @@ var hostAdmin = (function(){
 				loadhost();
 				last_modify = t;
 				
-				
-				var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);	
+				var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
 				var backToOnline = false; // learn from dnsFlusher (to fix offline bug)
-
 				try{
 					ioService.offline = true;
-					var cacheService = Components.classes["@mozilla.org/network/cache-service;1"].getService(Components.interfaces.nsICacheService);
-					cacheService.evictEntries(Components.interfaces.nsICache.STORE_ANYWHERE);
-					ioService.offline = false;
-				}catch(e){
-				}finally{
-					if (!backToOnline) {
-						if (ioService) {
-							ioService.offline = false;
-						}
+					var cacheService = Components.classes["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
+					cacheService.evictEntries(Ci.nsICache.STORE_ANYWHERE);
+				}catch(e){}
+				finally{
+					if (!backToOnline && ioService){
+						ioService.offline = false;
 					}
 				}
 				return true;
@@ -328,7 +325,7 @@ var hostAdmin = (function(){
 			refresh : refresh
 		};
 		
-	})`();
+	})();
 	
 	var curHost = "";
 
@@ -393,62 +390,59 @@ var hostAdmin = (function(){
 	
 	
 	var host_refresh = { 
-		notify: function(timer) {
+		observe: function(subject, topic, data){
 			//dump("timeer\n");
+			//alert('timer');
 			if(host_admin.refresh()){
 				updatelb();
-			//}else{
 			};
 		} 
 	}	
 	var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
-	timer.initWithCallback(host_refresh, 1000,	Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
+	timer.init(host_refresh, 1000,	Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
 	
 	
 	var onload = function(event){
 	
 		host_admin.refresh();
 		
-		
 		window.getBrowser().addProgressListener({
 			onLocationChange: function(aProgress, aRequest, aLocation){
-				curHost = "";
-				try{
-					if (aLocation && aLocation.host){
-						curHost = aLocation.host;
-						
+					curHost = "";
+					try{
+						if (aLocation && aLocation.host){
+							curHost = aLocation.host;
+						}
 					}
+					catch(e){					
+					}
+					finally{	
+						updatelb();
+					}
+				},
+				onStateChange: function(a, b, c, d){
+				},
+				onProgressChange: function(a, b, c, d, e, f){
+				},
+				onStatusChange: function(a, b, c, d){
+				},
+				onSecurityChange: function(a, b, c){
+				},
+				onLinkIconAvailable: function(a){
 				}
-				catch(e){					
-				}
-				finally{	
-					updatelb();
-				}
-            },
-			onStateChange: function(a, b, c, d){
-            },
-            onProgressChange: function(a, b, c, d, e, f){
-            },
-            onStatusChange: function(a, b, c, d){
-            },
-            onSecurityChange: function(a, b, c){
-            },
-            onLinkIconAvailable: function(a){
-            }
-		}, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT );
+			}, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT );
 	}
 	
 	var onpopup = function(){
 		var menu = document.getElementById("hostadmin-popup");
-
-		
 	}
 	
 	return {
 		load : onload ,
 		click : onclick,
 		popup : onpopup,
-		menuitem : menuitem
+		menuitem : menuitem,
+		timer: timer //prevent form being gc
 	}
 
 })();

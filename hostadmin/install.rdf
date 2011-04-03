@@ -1,19 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
-  <Description about="urn:mozilla:install-manifest">
-    <em:id>{bd54afa8-b14a-4d7a-aecf-37e34e882796}</em:id>
-    <em:type>2</em:type>
-    <em:name>HostAdmin</em:name>
-    <em:version>1.0.0</em:version>
-    <em:creator>T.G.</em:creator>
-    <em:contributor></em:contributor>
-    <em:description>Manage Hosts file while browsing</em:description>
-    <em:targetApplication>
-      <Description>
-        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- Firefox -->
-        <em:minVersion>3.5</em:minVersion>
-        <em:maxVersion>3.7a1pre</em:maxVersion>
-      </Description>
-    </em:targetApplication>
-  </Description>
-</RDF>
+<?xml version="1.0"?>
+<RDF:RDF xmlns:em="http://www.mozilla.org/2004/em-rdf#"
+         xmlns:NC="http://home.netscape.com/NC-rdf#"
+         xmlns:RDF="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <RDF:Description RDF:about="urn:mozilla:install-manifest"
+                   em:id="{bd54afa8-b14a-4d7a-aecf-37e34e882796}"
+                   em:name="HostAdmin"
+                   em:version="1.1.0"
+                   em:creator="T.G."
+                   em:description="Manage Hosts file while browsing"
+                   em:homepageURL="http://code.google.com/p/fire-hostadmin/" em:unpack="true">
+    <em:targetApplication RDF:resource="rdf:#$pXbVU2"/>
+  </RDF:Description>
+  <RDF:Description RDF:about="rdf:#$pXbVU2"
+                   em:id="{ec8030f7-c20a-464f-9b0e-13a3a9e97384}"
+                   em:minVersion="4.0"
+                   em:maxVersion="4.0" />
+</RDF:RDF>
