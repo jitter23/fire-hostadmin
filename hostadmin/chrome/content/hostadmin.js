@@ -148,14 +148,14 @@ var hostAdmin = (function(){
 		if (os == "WINNT"){
 			charset = "gbk";
 			try {
-				var hs = Components.classes["@phpsix.net/hostadmin;1"].createInstance(Ci.IhostAdmin);
+				var hs = Components.classes["@phpsix.net/hostadmin;1"].getService(Components.interfaces.IhostAdmin);
 				file_name = hs.getHostPath();
 			}
 			catch (err) {
-				//alert(err);
 				//alert("use default");
 				file_name = "C:\\windows\\system32\\drivers\\etc\\hosts";
 			}
+			
 		}else if(os == "Linux"){
 			file_name = "/etc/hosts";
 		}
