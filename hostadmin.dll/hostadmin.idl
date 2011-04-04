@@ -1,7 +1,0 @@
-#include "nsISupports.idl"
-
-[scriptable, uuid(c9379fdf-31ee-4d57-802e-d412842928c9)]
-interface IhostAdmin : nsISupports
-{
-  AString getHostPath();
-};
