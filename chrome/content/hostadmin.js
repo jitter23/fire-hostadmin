@@ -141,12 +141,14 @@ var hostAdmin = (function(){
 	var host_file_wrapper = (function(){	
 
 		var file_name = "";
+		var splitchar = "\n";
 		var os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 
 		var charset = "utf8";
 
 		if (os == "WINNT"){
 			charset = "gbk";
+			splitchar = "\r\n";
 			try {
 				var winDir = Components.classes["@mozilla.org/file/directory_service;1"].
 				getService(Components.interfaces.nsIProperties).get("WinD", Components.interfaces.nsILocalFile); 
@@ -177,17 +179,15 @@ var hostAdmin = (function(){
 				var file = FileIO.open(file_name);
 				return file.lastModifiedTime;
 			}
+			,
+			splitchar : splitchar
 		};
 	})();
-	
-		//public 
-		
 	
 	var host_admin = (function(){
 		var ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
 		var lines = [];
 		var hosts = {};
-		//public 
 		
 		var loadhost = function() {
 		
@@ -195,8 +195,11 @@ var hostAdmin = (function(){
 			hosts = {};
 			//read
 			var host = host_file_wrapper.get();
-			host += "\n";
 			
+			if (host.charAt(host.length - 1) != "\n"){ //fix no lf
+				host += host_file_wrapper.splitchar;
+			}
+
 			var l_p = 0; //pointer to line
 			regx = /(.*?)\r?\n/mg
 			while(l = regx.exec(host)){
@@ -225,7 +228,6 @@ var hostAdmin = (function(){
 					continue;
 				}
 				
-	
 				var comment = "";
 
 				var names = [];
