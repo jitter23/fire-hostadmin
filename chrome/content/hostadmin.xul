@@ -3,13 +3,12 @@
 <overlay id="hostadmin-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	<script src="hostadmin.js"/>
 
-
 	<statusbar id="status-bar">
 		<menupopup id="hostadmin-popup">
 		</menupopup>
 		
 		<statusbarpanel id="hostadmin-panel">
-		    <label value="Not in Hosts" id="hostadmin-label" onmousedown="event.preventDefault();hostAdmin.click(event);"/>
+		    <label value="Not in Hosts" id="hostadmin-label" onmousedown="hostAdmin.click(event);"/>
 		</statusbarpanel>
 	</statusbar>
 </overlay>

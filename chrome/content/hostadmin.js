@@ -196,7 +196,7 @@ var hostAdmin = (function(){
 			//read
 			var host = host_file_wrapper.get();
 			
-			if (host.charAt(host.length - 1) != "\n"){ //fix no lf
+			if (host && host.charAt(host.length - 1) != "\n"){ //fix no lf
 				host += host_file_wrapper.splitchar;
 			}
 
@@ -261,8 +261,6 @@ var hostAdmin = (function(){
 					
 					hosts[name].push(ip);
 				}
-			   
-				
 			}
 		};
 		
@@ -353,13 +351,9 @@ var hostAdmin = (function(){
 	
 	var menuitem = function(host_name, ip_p){
 		host_admin.host_enable(host_name, ip_p);
-		
 		host_file_wrapper.set(host_admin.mk_host());
 		host_admin.refresh();
 		updatelb();
-		//alert(host_admin.mk_host());
-		//alert(host_name + ip_p);
-		
 	}
 	
 	var mk_menu_item = function(hostname, host , indexOfhost){
@@ -375,6 +369,8 @@ var hostAdmin = (function(){
 	}
 
 	var onclick = function(event){
+		if(event.button != 0) return false;
+
 		var menu = document.getElementById("hostadmin-popup");
 		var lb = document.getElementById("hostadmin-label");
 		
@@ -382,18 +378,26 @@ var hostAdmin = (function(){
 		var hosts = host_admin.get_hosts();
 
 		var hasOther = false;
+		var tosortKey = [];
+		var tosortM = [];
+			
 		for (h in hosts){
 			if(h != curHost){
 				var sub = document.createElement("menu");
-				sub.setAttribute("label",h);
+				sub.setAttribute("label", "["+ h.charAt(0).toUpperCase() +"] " + h);
 				var popup = document.createElement("menupopup");
 				sub.appendChild(popup);
-				menu.appendChild(sub);
+				tosortKey.push(h);
+				tosortM[h] = sub;
 				for (i in hosts[h]){
 					popup.appendChild(mk_menu_item(h, hosts[h][i], i));
 				}
 				hasOther = true;
 			}
+		}
+		tosortKey = tosortKey.sort()
+		for (k in tosortKey){
+			menu.appendChild(tosortM[tosortKey[k]]);
 		}
 
 		hasCur = false;
@@ -410,14 +414,12 @@ var hostAdmin = (function(){
 		if(hasOther || hasCur){
 			menu.openPopup(lb, "before_start", 0 ,0, true);
 		}
-		return true;
+		return false;
 	}
 	
 	
 	var host_refresh = { 
 		observe: function(subject, topic, data){
-			//dump("timeer\n");
-			//alert('timer');
 			if(host_admin.refresh()){
 				updatelb();
 			};
