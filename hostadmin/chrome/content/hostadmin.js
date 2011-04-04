@@ -148,15 +148,17 @@ var hostAdmin = (function(){
 		if (os == "WINNT"){
 			charset = "gbk";
 			try {
-				var hs = Components.classes["@phpsix.net/hostadmin;1"].getService(Components.interfaces.IhostAdmin);
-				file_name = hs.getHostPath();
+				var winDir = Components.classes["@mozilla.org/file/directory_service;1"].
+				getService(Components.interfaces.nsIProperties).get("WinD", Components.interfaces.nsILocalFile); 
+				file_name = winDir.path + "\\system32\\drivers\\etc\\hosts";
 			}
 			catch (err) {
 				//alert("use default");
 				file_name = "C:\\windows\\system32\\drivers\\etc\\hosts";
 			}
-			
 		}else if(os == "Linux"){
+			file_name = "/etc/hosts";
+		}else if(os == "Darwin"){
 			file_name = "/etc/hosts";
 		}
 		
