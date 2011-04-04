@@ -299,15 +299,14 @@ var hostAdmin = (function(){
 				loadhost();
 				last_modify = t;
 				
-				var ioService = Cc["@mozilla.org/network/io-service;1"].getService(Ci.nsIIOService);
-				var backToOnline = false; // learn from dnsFlusher (to fix offline bug)
-				try{
-					ioService.offline = true;
-					var cacheService = Components.classes["@mozilla.org/network/cache-service;1"].getService(Ci.nsICacheService);
-					cacheService.evictEntries(Ci.nsICache.STORE_ANYWHERE);
-				}catch(e){}
-				finally{
-					if (!backToOnline && ioService){
+				if(typeof Cc !="undefined"){ // when loading
+					var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
+					try{
+						ioService.offline = true;
+						var cacheService = Components.classes["@mozilla.org/network/cache-service;1"].getService(Components.interfaces.nsICacheService);
+						cacheService.evictEntries(Components.interfaces.nsICache.STORE_ANYWHERE);
+					}catch(e){}
+					finally{
 						ioService.offline = false;
 					}
 				}
@@ -359,32 +358,54 @@ var hostAdmin = (function(){
 		
 	}
 	
+	var mk_menu_item = function(hostname, host , indexOfhost){
+		var mi = document.createElement("menuitem");
+		mi.setAttribute("label",host.addr + " " + host.comment);
+		mi.setAttribute("type","checkbox");
+		mi.setAttribute("oncommand","hostAdmin.menuitem('" + hostname + "'," + indexOfhost + ");" );
+		
+		if(host.using){
+			mi.setAttribute("checked",true);
+		}
+		return mi;
+	}
+
 	var onclick = function(event){
 		var menu = document.getElementById("hostadmin-popup");
 		var lb = document.getElementById("hostadmin-label");
 		
+		while (menu.lastChild) menu.removeChild(menu.lastChild);
 		var hosts = host_admin.get_hosts();
 
-		if (typeof hosts[curHost] != "undefined") {
-			while (menu.lastChild) menu.removeChild(menu.lastChild);
+		var hasOther = false;
+		for (h in hosts){
+			if(h != curHost){
+				var sub = document.createElement("menu");
+				sub.setAttribute("label",h);
+				var popup = document.createElement("menupopup");
+				sub.appendChild(popup);
+				menu.appendChild(sub);
+				for (i in hosts[h]){
+					popup.appendChild(mk_menu_item(h, hosts[h][i], i));
+				}
+				hasOther = true;
+			}
+		}
 
+		hasCur = false;
+		if (typeof hosts[curHost] != "undefined") {
+			if(hasOther){
+				menu.appendChild(document.createElement("menuseparator"));
+			}
 			hosts = hosts[curHost];
 			for (i in hosts){
-				h = hosts[i];
-				var mi = document.createElement("menuitem");
-				mi.setAttribute("label",h.addr + " " + h.comment);
-				mi.setAttribute("type","checkbox");
-				mi.setAttribute("oncommand","hostAdmin.menuitem('" + curHost + "'," + i + ");" );
-				
-				if(h.using){
-					mi.setAttribute("checked",true);
-				}
-				menu.appendChild(mi);
-			}	
-			
+				menu.appendChild(mk_menu_item(curHost, hosts[i], i));
+			}
+			hasCur = true;
+		}
+		if(hasOther || hasCur){
 			menu.openPopup(lb, "before_start", 0 ,0, true);
 		}
-		
 		return true;
 	}
 	
