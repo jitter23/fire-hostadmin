@@ -1,8 +1,12 @@
 var hostAdmin = (function(){
+	
+	const EDITOR_URL = 'chrome://hostadmin/content/editor/hostadmin.html';
 
 	var host_file_wrapper = (function(){	
-		Components.utils.import("chrome://hostadmin/content/FileIO.jsm");
-
+		var s = {};
+		Components.utils.import("chrome://hostadmin/content/FileIO.jsm", s);
+		
+		var FileIO = s.FileIO;
 		var file_name = "";
 		var splitchar = "\n";
 		var os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
@@ -280,11 +284,16 @@ var hostAdmin = (function(){
 		return false;
 	}
 	
-	
+
 	var host_refresh = { 
+		
 		observe: function(subject, topic, data){
 			if(host_admin.refresh()){
 				updatelb();
+
+				var e = doc.createEvent('Events');
+				e.initEvent('HostAdminRefresh', false, false);
+				document.dispatchEvent(e);
 			};
 		} 
 	}	
@@ -293,11 +302,10 @@ var hostAdmin = (function(){
 	
 	
 	var onload = function(event){
-	
 		host_admin.refresh();
 		
 		window.getBrowser().addProgressListener({
-			onLocationChange: function(aProgress, aRequest, aLocation){
+				onLocationChange: function(aWebProgress, aRequest, aLocation){
 					curHost = "";
 					try{
 						if (aLocation && aLocation.host){
@@ -309,18 +317,24 @@ var hostAdmin = (function(){
 					finally{	
 						updatelb();
 					}
+
 				},
-				onStateChange: function(a, b, c, d){
-				},
-				onProgressChange: function(a, b, c, d, e, f){
-				},
-				onStatusChange: function(a, b, c, d){
-				},
-				onSecurityChange: function(a, b, c){
-				},
-				onLinkIconAvailable: function(a){
-				}
 			}, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT );
+
+		window.getBrowser().addEventListener('pageshow', function(e){
+			if(e.target && e.target.documentURI == EDITOR_URL){
+				var doc = e.originalTarget;
+				var textarea = doc.getElementById('code');
+
+				document.addEventListener('HostAdminRefresh', function(e) {
+					textarea.value = host_file_wrapper.get();
+				}, false);
+				
+				alert(document.editor);
+				textarea.value = host_file_wrapper.get();
+			}
+			
+		}, false);
 	}
 	
 	var onpopup = function(){
