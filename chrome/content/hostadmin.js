@@ -291,7 +291,7 @@ var hostAdmin = (function(){
 			if(host_admin.refresh()){
 				updatelb();
 
-				var e = doc.createEvent('Events');
+				var e = document.createEvent('Events');
 				e.initEvent('HostAdminRefresh', false, false);
 				document.dispatchEvent(e);
 			};
@@ -324,14 +324,14 @@ var hostAdmin = (function(){
 		window.getBrowser().addEventListener('pageshow', function(e){
 			if(e.target && e.target.documentURI == EDITOR_URL){
 				var doc = e.originalTarget;
-				var textarea = doc.getElementById('code');
 
+				var codeMirror = e.target.defaultView.wrappedJSObject['editor'];
+				
 				document.addEventListener('HostAdminRefresh', function(e) {
-					textarea.value = host_file_wrapper.get();
+					codeMirror.setValue(host_file_wrapper.get());
 				}, false);
 				
-				alert(document.editor);
-				textarea.value = host_file_wrapper.get();
+				codeMirror.setValue(host_file_wrapper.get());
 			}
 			
 		}, false);
