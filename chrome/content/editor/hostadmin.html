@@ -9,14 +9,13 @@
 
     <style type="text/css">
       .CodeMirror {border: 1px solid black;}
+      button {float:right; font-size: 0.9em; }
     </style>
   </head>
   <body>
-    <h1>HostAdmin Host Editor</h1>
-
-    <textarea id="code" name="code">
-	</textarea>
-
+    <h1>HostAdmin Host Editor
+    <button id="btnSave">Save</button></h1>
+    <textarea id="code" name="code"></textarea>
 
 <h2>Syntax Help</h2>
 
@@ -24,6 +23,9 @@
 <li>
 <pre>
 [#] IP HOSTNAME [# COMMENT] 
+
+Note: 
+when comment is 'ignore' (case-insensitive), that line will be ignored
 </pre>
 </li>
 <li>

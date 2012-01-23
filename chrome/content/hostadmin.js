@@ -52,7 +52,7 @@ var hostAdmin = (function(){
 	})();
 	
 	var host_admin = (function(){
-		var ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
+		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
 		var lines = [];
 		var hosts = {};
 		
@@ -68,7 +68,8 @@ var hostAdmin = (function(){
 			}
 
 			var l_p = 0; //pointer to line
-			regx = /(.*?)\r?\n/mg
+			const regx = /(.*?)\r?\n/mg
+			var l = null;
 			while(l = regx.exec(host)){
 				l = l[0];
 				
@@ -99,9 +100,9 @@ var hostAdmin = (function(){
 
 				var names = [];
 				var findc = false;
-				for (i in tks){
+				for (var i in tks){
 					if(tks[i] == "#"){
-						var findc = true;
+						findc = true;
 						continue;
 					}
 					
@@ -112,6 +113,9 @@ var hostAdmin = (function(){
 					}
 				}
 
+				if(comment.toUpperCase() == 'IGNORE '){
+					continue;
+				}
 
 				ip = {
 					addr : ip, 
@@ -120,12 +124,12 @@ var hostAdmin = (function(){
 					comment : comment.substr(0,6)
 				};
 	
-				for (i in names){
+				for (var i in names){
 					var name = names[i];
 					if(typeof hosts[name] == "undefined"){
 						hosts[name] = [];
 					}
-					
+				
 					hosts[name].push(ip);
 				}
 			}
@@ -138,7 +142,7 @@ var hostAdmin = (function(){
 		 */
 		var host_enable = function(host_name, ip_p){
 			if(hosts[host_name]){			
-				for (i in hosts[host_name]){
+				for (var i in hosts[host_name]){
 					var ip = hosts[host_name][i];
 					if(ip.using){ //  && i != ip_p ){
 						lines[ip.line] = "#" + lines[ip.line];
@@ -151,7 +155,7 @@ var hostAdmin = (function(){
 		
 		var mk_host = function(){
 			var str = "";
-			for (i in lines){
+			for (var i in lines){
 				str += lines[i];
 			}
 			return str;
@@ -179,6 +183,11 @@ var hostAdmin = (function(){
 						ioService.offline = false;
 					}
 				}
+				
+				var e = document.createEvent('Events');
+				e.initEvent('HostAdminRefresh', false, false);
+				document.dispatchEvent(e);
+
 				return true;
 			}
 			return false;
@@ -204,7 +213,7 @@ var hostAdmin = (function(){
 		var hosts = host_admin.get_hosts();
 		if (typeof hosts[curHost] != "undefined") {
 			hosts = hosts[curHost];
-			for (i in hosts){
+			for (var i in hosts){
 				str = "In Hosts";
 				if(hosts[i].using){
 					str = hosts[i].addr + " " + hosts[i].comment;
@@ -219,15 +228,16 @@ var hostAdmin = (function(){
 	var menuitem = function(host_name, ip_p){
 		host_admin.host_enable(host_name, ip_p);
 		host_file_wrapper.set(host_admin.mk_host());
-		host_admin.refresh();
-		updatelb();
+		host_refresh.tick();	
 	}
 	
 	var mk_menu_item = function(hostname, host , indexOfhost){
 		var mi = document.createElement("menuitem");
 		mi.setAttribute("label",host.addr + " " + host.comment);
 		mi.setAttribute("type","checkbox");
-		mi.setAttribute("oncommand","hostAdmin.menuitem('" + hostname + "'," + indexOfhost + ");" );
+		mi.addEventListener("command", function(e){
+			menuitem(hostname , indexOfhost);
+		});
 		
 		if(host.using){
 			mi.setAttribute("checked",true);
@@ -248,7 +258,7 @@ var hostAdmin = (function(){
 		var tosortKey = [];
 		var tosortM = [];
 			
-		for (h in hosts){
+		for (var h in hosts){
 			if(h != curHost){
 				var sub = document.createElement("menu");
 				sub.setAttribute("label", "["+ h.charAt(0).toUpperCase() +"] " + h);
@@ -256,24 +266,24 @@ var hostAdmin = (function(){
 				sub.appendChild(popup);
 				tosortKey.push(h);
 				tosortM[h] = sub;
-				for (i in hosts[h]){
+				for (var i in hosts[h]){
 					popup.appendChild(mk_menu_item(h, hosts[h][i], i));
 				}
 				hasOther = true;
 			}
 		}
 		tosortKey = tosortKey.sort()
-		for (k in tosortKey){
+		for (var k in tosortKey){
 			menu.appendChild(tosortM[tosortKey[k]]);
 		}
 
-		hasCur = false;
+		var hasCur = false;
 		if (typeof hosts[curHost] != "undefined") {
 			if(hasOther){
 				menu.appendChild(document.createElement("menuseparator"));
 			}
 			hosts = hosts[curHost];
-			for (i in hosts){
+			for (var i in hosts){
 				menu.appendChild(mk_menu_item(curHost, hosts[i], i));
 			}
 			hasCur = true;
@@ -288,21 +298,23 @@ var hostAdmin = (function(){
 	var host_refresh = { 
 		
 		observe: function(subject, topic, data){
+			this.tick();
+		},
+
+		tick: function(){
 			if(host_admin.refresh()){
 				updatelb();
-
-				var e = document.createEvent('Events');
-				e.initEvent('HostAdminRefresh', false, false);
-				document.dispatchEvent(e);
 			};
-		} 
+		}
+		
 	}	
+
 	var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
 	timer.init(host_refresh, 1000,	Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
 	
-	
+
 	var onload = function(event){
-		host_admin.refresh();
+		host_refresh.tick();	
 		
 		window.getBrowser().addProgressListener({
 				onLocationChange: function(aWebProgress, aRequest, aLocation){
@@ -332,6 +344,12 @@ var hostAdmin = (function(){
 				}, false);
 				
 				codeMirror.setValue(host_file_wrapper.get());
+
+				var save = doc.getElementById("btnSave");
+				save.addEventListener('click', function(e) {
+					host_file_wrapper.set(codeMirror.getValue());
+					host_refresh.tick();	
+				});
 			}
 			
 		}, false);

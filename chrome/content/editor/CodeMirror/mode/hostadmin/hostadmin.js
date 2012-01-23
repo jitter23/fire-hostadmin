@@ -22,7 +22,10 @@ CodeMirror.defineMode("hostadmin", function(config, parserConfig) {
 					state.hasIP = true;
 					return "keyword";
 				}
-
+				
+				if(stream.match(/^\s*ignore\s*$/i)){
+					return "keyword";
+				}
 
 				state.groupline = false;
 				state.hasIP = false;
