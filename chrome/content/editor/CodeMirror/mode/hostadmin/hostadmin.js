@@ -11,19 +11,19 @@ CodeMirror.defineMode("hostadmin", function(config, parserConfig) {
 		token: function(stream, state) {
 			var ch = stream.next();
 			if (ch == "#") {
-				if(stream.match('====')){
+				if(stream.match(/====\s/) || stream.match(/====$/) ){
 					state.groupline = true;
 					state.groupid++;
 					return "keyword";
 				}
 				
-				stream.eatWhile(/[# ]/);
+				stream.eatWhile(/[#\s]/);
 				if(!state.hasIP && stream.match(ipv4, false)){
 					state.hasIP = true;
 					return "keyword";
 				}
 				
-				if(stream.match(/^\s*ignore\s*$/i)){
+				if(stream.match(/^\s*hide\s*$/i)){
 					return "keyword";
 				}
 

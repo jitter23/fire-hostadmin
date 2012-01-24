@@ -55,6 +55,7 @@ var hostAdmin = (function(){
 		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
 		var lines = [];
 		var hosts = {};
+		var groups = {};
 		
 		var loadhost = function() {
 		
@@ -70,17 +71,39 @@ var hostAdmin = (function(){
 			var l_p = 0; //pointer to line
 			const regx = /(.*?)\r?\n/mg
 			var l = null;
+			var group_id = 0;
+			var group_c = 0;
+
 			while(l = regx.exec(host)){
 				l = l[0];
 				
 				lines[l_p++] = l;
 				
 				l = l.replace(/^(\s*#)+/,"#");
-				l = l.replace(/#/g,"# ");
+				l = l.replace(/#/g," # ");
 				l = l.replace(/^\s+|\s+$/g,"");
 				l = l.replace(/\s+/g," ");
 				
 				var tks = l.split(" ");
+
+				if (tks[0] == "#" && tks[1] == "===="){
+					if(group_c++ % 2 == 1){
+						group_id++;
+					}else{
+						tks.splice(0,2);
+						var group_name = "";
+						for(var i in tks){
+							group_name += tks[i];
+						}
+
+						if(group_name == ""){
+							group_name = "Group " + group_id;
+						}
+
+						groups[group_id] = group_name;
+					}
+					continue;	
+				}
 							
 				var using = true;
 				if (tks[0] == "#"){
@@ -113,15 +136,13 @@ var hostAdmin = (function(){
 					}
 				}
 
-				if(comment.toUpperCase() == 'IGNORE '){
-					continue;
-				}
 
 				ip = {
 					addr : ip, 
 					using : using ,
 					line : l_p - 1,
-					comment : comment.substr(0,6)
+					comment : comment,
+					group : group_id
 				};
 	
 				for (var i in names){
@@ -139,14 +160,16 @@ var hostAdmin = (function(){
 		/*  
 		 * host_name host名字
 		 * ip_p ip的列表中指针
+		 * gp_p group 的id 
+		 * 这么多参数 设计不好 需要重构
 		 */
-		var host_enable = function(host_name, ip_p){
+		var host_enable = function(host_name, ip_p, gp_p){
 			if(hosts[host_name]){			
 				for (var i in hosts[host_name]){
 					var ip = hosts[host_name][i];
 					if(ip.using){ //  && i != ip_p ){
 						lines[ip.line] = "#" + lines[ip.line];
-					}else if (!ip.using && i == ip_p ){
+					}else if (!ip.using && (i == ip_p || ip.group == gp_p )){
 						lines[ip.line] = lines[ip.line].replace(/^(\s*#)+/,"");
 					}
 				}
@@ -197,6 +220,9 @@ var hostAdmin = (function(){
 			get_hosts : function(){
 				return hosts;
 			},
+			get_groups : function(){
+				return groups;
+			},
 			host_enable : host_enable,
 			mk_host : mk_host,
 			refresh : refresh
@@ -233,7 +259,7 @@ var hostAdmin = (function(){
 	
 	var mk_menu_item = function(hostname, host , indexOfhost){
 		var mi = document.createElement("menuitem");
-		mi.setAttribute("label",host.addr + " " + host.comment);
+		mi.setAttribute("label",host.addr + " " + host.comment.substr(0,6));
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
 			menuitem(hostname , indexOfhost);
@@ -245,6 +271,16 @@ var hostAdmin = (function(){
 		return mi;
 	}
 
+	var mk_menu_gp_item = function(group_name, group_id){
+		var mi = document.createElement("menuitem");
+		mi.setAttribute("label", "<Group>" + group_name);
+		mi.setAttribute("type","checkbox");
+		mi.addEventListener("command", function(e){
+			menuitem(hostname , indexOfhost);
+		});
+		return mi;
+	}
+
 	var onclick = function(event){
 		if(event.button != 0) return false;
 
@@ -253,6 +289,7 @@ var hostAdmin = (function(){
 		
 		while (menu.lastChild) menu.removeChild(menu.lastChild);
 		var hosts = host_admin.get_hosts();
+		var groups = host_admin.get_groups();
 
 		var hasOther = false;
 		var tosortKey = [];
@@ -264,12 +301,19 @@ var hostAdmin = (function(){
 				sub.setAttribute("label", "["+ h.charAt(0).toUpperCase() +"] " + h);
 				var popup = document.createElement("menupopup");
 				sub.appendChild(popup);
-				tosortKey.push(h);
-				tosortM[h] = sub;
+				var hide = true;
 				for (var i in hosts[h]){
-					popup.appendChild(mk_menu_item(h, hosts[h][i], i));
+					if(hosts[h][i].comment.toUpperCase() != 'HIDE '){
+						popup.appendChild(mk_menu_item(h, hosts[h][i], i));
+						hasOther = true;
+						hide = false;
+					}
 				}
-				hasOther = true;
+
+				if(!hide){
+					tosortKey.push(h);
+					tosortM[h] = sub;
+				}
 			}
 		}
 		tosortKey = tosortKey.sort()
@@ -284,9 +328,14 @@ var hostAdmin = (function(){
 			}
 			hosts = hosts[curHost];
 			for (var i in hosts){
-				menu.appendChild(mk_menu_item(curHost, hosts[i], i));
+				if(hosts[i].comment.toUpperCase() != 'HIDE '){
+					menu.appendChild(mk_menu_item(curHost, hosts[i], i));
+					hasCur = true;
+				}
 			}
-			hasCur = true;
+			if(!hasCur){
+				menu.removeChild(menu.lastChild);
+			}
 		}
 		if(hasOther || hasCur){
 			menu.openPopup(lb, "before_start", 0 ,0, true);
