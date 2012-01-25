@@ -6,12 +6,12 @@ var hostAdmin = (function(){
 		var s = {};
 		Components.utils.import("chrome://hostadmin/content/FileIO.jsm", s);
 		
-		var FileIO = s.FileIO;
-		var file_name = "";
-		var splitchar = "\n";
-		var os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
+		const FileIO = s.FileIO;
+		const splitchar = "\n";
+		const os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 
 		var charset = "utf8";
+		var file_name = "";
 
 		if (os == "WINNT"){
 			charset = "gbk";
@@ -87,13 +87,12 @@ var hostAdmin = (function(){
 				var tks = l.split(" ");
 
 				if (tks[0] == "#" && tks[1] == "===="){
-					if(group_c++ % 2 == 1){
+					if(group_c++ % 2 == 0){
 						group_id++;
-					}else{
 						tks.splice(0,2);
 						var group_name = "";
 						for(var i in tks){
-							group_name += tks[i];
+							group_name += tks[i] + " ";
 						}
 
 						if(group_name == ""){
@@ -156,26 +155,66 @@ var hostAdmin = (function(){
 			}
 		};
 		
-		
-		/*  
-		 * host_name host名字
-		 * ip_p ip的列表中指针
-		 * gp_p group 的id 
-		 * 这么多参数 设计不好 需要重构
-		 */
-		var host_enable = function(host_name, ip_p, gp_p){
+		var line_enable = function(ip){
+			if(!ip.using){
+				lines[ip.line] = lines[ip.line].replace(/^(\s*#)+/,"");
+			}
+			ip.using = true;
+		}
+
+		var line_disable = function(ip){
+			if(ip.using){
+				lines[ip.line] = "#" + lines[ip.line];
+			}
+			ip.using = false;
+		}
+
+		var host_toggle = function(host_name, ip_p){
 			if(hosts[host_name]){			
 				for (var i in hosts[host_name]){
 					var ip = hosts[host_name][i];
-					if(ip.using){ //  && i != ip_p ){
-						lines[ip.line] = "#" + lines[ip.line];
-					}else if (!ip.using && (i == ip_p || ip.group == gp_p )){
-						lines[ip.line] = lines[ip.line].replace(/^(\s*#)+/,"");
+					
+					if(i == ip_p){
+						line_enable(ip);
+					}else{
+						line_disable(ip);
 					}
 				}
 			}
 		}
-		
+
+		var is_group_all_using = function(host_list, gp_p){
+			for(var h in host_list){
+				for (var i in hosts[host_list[h]]){
+					var ip = hosts[host_list[h]][i];
+					if(ip.group == gp_p && !ip.using){
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		var group_toggle = function(host_list, gp_p){
+			var using = is_group_all_using(host_list, gp_p);
+			
+			for(var h in host_list){
+				for (var i in hosts[host_list[h]]){
+					var ip = hosts[host_list[h]][i];
+					
+					if(ip.group == gp_p){
+						if(using){
+							line_disable(ip);
+						}else{
+							line_enable(ip);
+						}
+					}else if(ip.using){
+						line_disable(ip);
+					}
+				}
+			}
+		}
+
 		var mk_host = function(){
 			var str = "";
 			for (var i in lines){
@@ -185,9 +224,8 @@ var hostAdmin = (function(){
 		}
 		
 		var last_modify = 0;
-		//loadhost();
 		
-		
+		// {{{		
 		var refresh = function(){
 			var t = host_file_wrapper.time();
 			
@@ -215,6 +253,7 @@ var hostAdmin = (function(){
 			}
 			return false;
 		}
+		// }}}
 		
 		return {
 			get_hosts : function(){
@@ -223,7 +262,9 @@ var hostAdmin = (function(){
 			get_groups : function(){
 				return groups;
 			},
-			host_enable : host_enable,
+			host_toggle : host_toggle,
+			group_toggle : group_toggle,
+			group_checked : is_group_all_using,
 			mk_host : mk_host,
 			refresh : refresh
 		};
@@ -251,18 +292,14 @@ var hostAdmin = (function(){
 		document.getElementById("hostadmin-label").value = str;
 	}
 	
-	var menuitem = function(host_name, ip_p){
-		host_admin.host_enable(host_name, ip_p);
-		host_file_wrapper.set(host_admin.mk_host());
-		host_refresh.tick();	
-	}
-	
-	var mk_menu_item = function(hostname, host , indexOfhost){
+	var mk_menu_item = function(hostname, host , host_index){
 		var mi = document.createElement("menuitem");
 		mi.setAttribute("label",host.addr + " " + host.comment.substr(0,6));
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
-			menuitem(hostname , indexOfhost);
+			host_admin.host_toggle(hostname, host_index);
+			host_file_wrapper.set(host_admin.mk_host());
+			host_refresh.tick();	
 		});
 		
 		if(host.using){
@@ -271,13 +308,18 @@ var hostAdmin = (function(){
 		return mi;
 	}
 
-	var mk_menu_gp_item = function(group_name, group_id){
+	var mk_menu_gp_item = function(group_name, group_id, host_list){
 		var mi = document.createElement("menuitem");
-		mi.setAttribute("label", "<Group>" + group_name);
+		mi.setAttribute("label", "<Group> " + group_name.substr(0,15));
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
-			menuitem(hostname , indexOfhost);
+			host_admin.group_toggle(host_list, group_id);
+			host_file_wrapper.set(host_admin.mk_host());
+			host_refresh.tick();	
 		});
+		if(host_admin.group_checked(host_list, group_id)){
+			mi.setAttribute("checked",true);
+		}
 		return mi;
 	}
 
@@ -289,7 +331,8 @@ var hostAdmin = (function(){
 		
 		while (menu.lastChild) menu.removeChild(menu.lastChild);
 		var hosts = host_admin.get_hosts();
-		var groups = host_admin.get_groups();
+		var group_names = host_admin.get_groups();
+		var groups = [];
 
 		var hasOther = false;
 		var tosortKey = [];
@@ -307,6 +350,16 @@ var hostAdmin = (function(){
 						popup.appendChild(mk_menu_item(h, hosts[h][i], i));
 						hasOther = true;
 						hide = false;
+						
+						var g = hosts[h][i].group;
+						var gn = group_names[g];
+						if(gn){
+							if(typeof groups[g] == "undefined"){
+								groups[g] = [];
+							}
+							
+							groups[g].push(h);
+						}
 					}
 				}
 
@@ -319,6 +372,16 @@ var hostAdmin = (function(){
 		tosortKey = tosortKey.sort()
 		for (var k in tosortKey){
 			menu.appendChild(tosortM[tosortKey[k]]);
+		}
+
+		if ( groups.length > 0){
+			if(hasOther){
+				menu.appendChild(document.createElement("menuseparator"));
+			}
+
+			for(var g in groups){
+				menu.appendChild(mk_menu_gp_item(group_names[g], g, groups[g]));
+			}
 		}
 
 		var hasCur = false;
@@ -412,7 +475,6 @@ var hostAdmin = (function(){
 		load : onload ,
 		click : onclick,
 		popup : onpopup,
-		menuitem : menuitem,
 		timer: timer //prevent form being gc
 	}
 
