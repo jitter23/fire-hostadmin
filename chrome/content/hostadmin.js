@@ -11,24 +11,40 @@ var hostAdmin = (function(){
 		const os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 
 		var charset = "utf8";
-		var file_name = "";
+		var file_names = [];
 
+		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+		prefs = prefs.getBranch("extensions.hostadmin.");
+		if (prefs.prefHasUserValue("hostsfilepath")) {
+			var configpath = prefs.getComplexValue("hostsfilepath",	Components.interfaces.nsISupportsString).data;
+			if (configpath != "default") {
+				file_names.push(configpath);
+			}
+		}
+	
 		if (os == "WINNT"){
 			charset = "gbk";
 			splitchar = "\r\n";
 			try {
 				var winDir = Components.classes["@mozilla.org/file/directory_service;1"].
 				getService(Components.interfaces.nsIProperties).get("WinD", Components.interfaces.nsILocalFile); 
-				file_name = winDir.path + "\\system32\\drivers\\etc\\hosts";
+				file_names.push(winDir.path + "\\system32\\drivers\\etc\\hosts");
 			}
-			catch (err) {
-				//alert("use default");
-				file_name = "C:\\windows\\system32\\drivers\\etc\\hosts";
-			}
+			catch (err) {}
+
+			file_names.push("C:\\windows\\system32\\drivers\\etc\\hosts");
 		}else if(os == "Linux"){
-			file_name = "/etc/hosts";
+			file_names.push("/etc/hosts");
 		}else if(os == "Darwin"){
-			file_name = "/etc/hosts";
+			file_names.push("/etc/hosts");
+		}
+
+		var file_name;
+		for(var i in file_names){
+			file_name = file_names[i];
+			if(FileIO.open(file_name).exists()){
+				break;
+			}
 		}
 		
 		return {
