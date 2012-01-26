@@ -23,7 +23,7 @@ CodeMirror.defineMode("hostadmin", function(config, parserConfig) {
 					return "keyword";
 				}
 				
-				if(state.hasIP && stream.match(/^\s*hide\s*$/i)){
+				if(stream.match(/^\s*hide/i) && !stream.match(/[^\s]/, false)){
 					return "keyword";
 				}
 

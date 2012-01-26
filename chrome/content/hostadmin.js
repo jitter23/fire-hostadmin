@@ -323,6 +323,17 @@ var hostAdmin = (function(){
 		return mi;
 	}
 
+	const editor_item = (function(){
+			var mi = document.createElement("menuitem");
+			mi.setAttribute("label", "Host Editor");
+
+			mi.addEventListener("command", function(e){
+				var t = window.getBrowser().addTab(EDITOR_URL);
+				window.getBrowser().selectedTab = t;
+			});
+			return mi;
+		})();
+
 	var onclick = function(event){
 		if(event.button != 0) return false;
 
@@ -350,16 +361,16 @@ var hostAdmin = (function(){
 						popup.appendChild(mk_menu_item(h, hosts[h][i], i));
 						hasOther = true;
 						hide = false;
-						
-						var g = hosts[h][i].group;
-						var gn = group_names[g];
-						if(gn){
-							if(typeof groups[g] == "undefined"){
-								groups[g] = [];
-							}
-							
-							groups[g].push(h);
+					}
+
+					var g = hosts[h][i].group;
+					var gn = group_names[g];
+					if(gn){
+						if(typeof groups[g] == "undefined"){
+							groups[g] = [];
 						}
+						
+						groups[g].push(h);
 					}
 				}
 
@@ -400,9 +411,14 @@ var hostAdmin = (function(){
 				menu.removeChild(menu.lastChild);
 			}
 		}
+
+
 		if(hasOther || hasCur){
-			menu.openPopup(lb, "before_start", 0 ,0, true);
+			menu.insertBefore(document.createElement("menuseparator"), menu.firstChild);
 		}
+		menu.insertBefore(editor_item, menu.firstChild);
+
+		menu.openPopup(lb, "before_start", 0 ,0, true);
 		return false;
 	}
 	
