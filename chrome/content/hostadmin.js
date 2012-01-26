@@ -314,7 +314,8 @@ var hostAdmin = (function(){
 	
 	var mk_menu_item = function(hostname, host , host_index){
 		var mi = document.createElement("menuitem");
-		mi.setAttribute("label",host.addr + " " + host.comment.substr(0,6));
+		mi.setAttribute("label",host.addr);
+		mi.setAttribute("acceltext", host.comment.substr(0,20));
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
 			host_admin.host_toggle(hostname, host_index);
@@ -330,7 +331,8 @@ var hostAdmin = (function(){
 
 	var mk_menu_gp_item = function(group_name, group_id, host_list){
 		var mi = document.createElement("menuitem");
-		mi.setAttribute("label", "<Group> " + group_name.substr(0,15));
+		mi.setAttribute("label", group_name.substr(0,35));
+		mi.setAttribute("acceltext", "Group");
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
 			host_admin.group_toggle(host_list, group_id);
@@ -370,7 +372,16 @@ var hostAdmin = (function(){
 		for (var h in hosts){
 			if(h != curHost){
 				var sub = document.createElement("menu");
-				sub.setAttribute("label", "["+ h.charAt(0).toUpperCase() +"] " + h);
+				sub.setAttribute("label", h);
+
+				sub.addEventListener("dblclick", (function(h){ 
+					return function(e){
+							var t = window.getBrowser().addTab(h);
+							window.getBrowser().selectedTab = t;
+						}
+					})(h));
+
+				sub.setAttribute("acceltext", h.charAt(0).toUpperCase());
 				var popup = document.createElement("menupopup");
 				sub.appendChild(popup);
 				var hide = true;
