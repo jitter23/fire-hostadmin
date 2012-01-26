@@ -53,6 +53,10 @@ var hostAdmin = (function(){
 	
 	var host_admin = (function(){
 		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
+
+		// copy from http://forums.intermapper.com/viewtopic.php?t=452
+		const ip6_regx = /^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$/ 
+
 		var lines = [];
 		var hosts = {};
 		var groups = {};
@@ -111,7 +115,7 @@ var hostAdmin = (function(){
 				}
 				
 				var ip = "";
-				if (ip_regx.test(tks[0])){
+				if (ip_regx.test(tks[0]) || ip6_regx.test(tks[0])){
 					ip = tks[0];
 					tks.splice(0,1);
 				}else{
@@ -174,7 +178,7 @@ var hostAdmin = (function(){
 				for (var i in hosts[host_name]){
 					var ip = hosts[host_name][i];
 					
-					if(i == ip_p){
+					if(i == ip_p && !ip.using){
 						line_enable(ip);
 					}else{
 						line_disable(ip);
@@ -334,11 +338,9 @@ var hostAdmin = (function(){
 			return mi;
 		})();
 
-	var onclick = function(event){
-		if(event.button != 0) return false;
-
+	// {{{ refresh menu
+	var refresh_menu = function(){
 		var menu = document.getElementById("hostadmin-popup");
-		var lb = document.getElementById("hostadmin-label");
 		
 		while (menu.lastChild) menu.removeChild(menu.lastChild);
 		var hosts = host_admin.get_hosts();
@@ -417,6 +419,17 @@ var hostAdmin = (function(){
 			menu.insertBefore(document.createElement("menuseparator"), menu.firstChild);
 		}
 		menu.insertBefore(editor_item, menu.firstChild);
+	}
+	// }}} refresh menu
+	
+	var onclick = function(event){
+		if(event.button != 0) return false;
+
+		host_refresh.tick();	
+		refresh_menu();
+
+		var menu = document.getElementById("hostadmin-popup");
+		var lb = document.getElementById("hostadmin-label");
 
 		menu.openPopup(lb, "before_start", 0 ,0, true);
 		return false;
@@ -431,6 +444,7 @@ var hostAdmin = (function(){
 
 		tick: function(){
 			if(host_admin.refresh()){
+				// refresh_menu();
 				updatelb();
 			};
 		}
@@ -463,21 +477,44 @@ var hostAdmin = (function(){
 
 		window.getBrowser().addEventListener('pageshow', function(e){
 			if(e.target && e.target.documentURI == EDITOR_URL){
-				var doc = e.originalTarget;
+				
+				var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+				                              .getService(Components.interfaces.nsIPromptService);
+
+				//var doc = e.originalTarget;
+				var doc = e.target;
 
 				var codeMirror = e.target.defaultView.wrappedJSObject['editor'];
-				
-				document.addEventListener('HostAdminRefresh', function(e) {
-					codeMirror.setValue(host_file_wrapper.get());
-				}, false);
+				var changed = function(){
+					return e.target.defaultView.wrappedJSObject['changed'];
+				}
 				
 				codeMirror.setValue(host_file_wrapper.get());
 
+				document.addEventListener('HostAdminRefresh', function(e) {
+					// TODO confirm parent ...
+					if(!changed() || promptService.confirm(null, 'HostAdmin', 'Hosts file changed, Reload ?')){	
+						codeMirror.setValue(host_file_wrapper.get());
+						renew();
+					}
+				}, false);
+				
+
 				var save = doc.getElementById("btnSave");
+
+				var renew = function(){
+					e.target.defaultView.wrappedJSObject['changed'] = false;
+					save.setAttribute("disabled", "disabled")
+				}
+
 				save.addEventListener('click', function(e) {
+					renew();
 					host_file_wrapper.set(codeMirror.getValue());
 					host_refresh.tick();	
+					renew();
 				});
+
+				renew();
 			}
 			
 		}, false);

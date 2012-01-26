@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>HostAdmin Host Editor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="stylesheet" href="CodeMirror/lib/codemirror.css">
     <script src="CodeMirror/lib/codemirror.js"></script>
     <link rel="stylesheet" href="CodeMirror/doc/docs.css">
@@ -45,9 +46,14 @@ when comment is 'hide' (case-insensitive), that line would not display in menu
 
 <p style="margin-top:80px">Editor powered by <a href="http://codemirror.net/" target="_blank">CodeMirror</a></p>
 <script>
-  var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-    lineNumbers: true,
-  });
+	var changed = false;
+	var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+		lineNumbers: true,
+		onChange: function(){
+			changed = true;
+			document.getElementById("btnSave").removeAttribute("disabled");
+		}
+	});
 </script>
 </body>
 </html>
