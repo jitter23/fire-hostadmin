@@ -18,7 +18,7 @@
     <button id="btnSave">Save</button></h1>
     <textarea id="code" name="code"></textarea>
 
-<h2>Syntax Help</h2>
+<h2><a href="http://code.google.com/p/fire-hostadmin/wiki/HOST_SYNTAX" target="_blank">Syntax Help</a></h2>
 
 <ul>
 <li>
@@ -44,7 +44,11 @@ when comment is 'hide' (case-insensitive), that line would not display in menu
 </ul>
 
 
-<p style="margin-top:80px">Editor powered by <a href="http://codemirror.net/" target="_blank">CodeMirror</a></p>
+<p style="margin-top:80px;font-size:0.8em;text-align:center">
+Editor powered by <a href="http://codemirror.net/" target="_blank">CodeMirror</a> | 
+<a href="http://code.google.com/p/fire-hostadmin/issues" target="_blank">Feedback</a>
+
+</p>
 <script>
 	var changed = false;
 	var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
