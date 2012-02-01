@@ -4,7 +4,7 @@ var hostAdmin = (function(){
 
 	var host_file_wrapper = (function(){	
 		var s = {};
-		Components.utils.import("chrome://hostadmin/content/FileIO.jsm", s);
+		Components.utils.import("resource://modules/FileIO.jsm", s);
 		
 		const FileIO = s.FileIO;
 		const splitchar = "\n";
@@ -321,7 +321,7 @@ var hostAdmin = (function(){
 			host_admin.host_toggle(hostname, host_index);
 			host_file_wrapper.set(host_admin.mk_host());
 			host_refresh.tick();	
-		});
+		}, false);
 		
 		if(host.using){
 			mi.setAttribute("checked",true);
@@ -338,7 +338,7 @@ var hostAdmin = (function(){
 			host_admin.group_toggle(host_list, group_id);
 			host_file_wrapper.set(host_admin.mk_host());
 			host_refresh.tick();	
-		});
+		}, false);
 		if(host_admin.group_checked(host_list, group_id)){
 			mi.setAttribute("checked",true);
 		}
@@ -352,7 +352,7 @@ var hostAdmin = (function(){
 			mi.addEventListener("command", function(e){
 				var t = window.getBrowser().addTab(EDITOR_URL);
 				window.getBrowser().selectedTab = t;
-			});
+			}, false);
 			return mi;
 		})();
 
@@ -379,7 +379,7 @@ var hostAdmin = (function(){
 							var t = window.getBrowser().addTab(h);
 							window.getBrowser().selectedTab = t;
 						}
-					})(h));
+					})(h), false);
 
 				sub.setAttribute("acceltext", h.charAt(0).toUpperCase());
 				var popup = document.createElement("menupopup");
@@ -539,7 +539,7 @@ var hostAdmin = (function(){
 					host_file_wrapper.set(codeMirror.getValue());
 					host_refresh.tick();	
 					renew();
-				});
+				}, false);
 
 				renew();
 			}
