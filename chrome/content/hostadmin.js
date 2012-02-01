@@ -108,7 +108,6 @@ var hostAdmin = (function(){
 
 				if (tks[0] == "#" && tks[1] == "===="){
 					if(group_c++ % 2 == 0){
-						group_id++;
 						tks.splice(0,2);
 						var group_name = "";
 						for(var i in tks){
@@ -120,6 +119,8 @@ var hostAdmin = (function(){
 						}
 
 						groups[group_id] = group_name;
+					}else{
+						group_id++;
 					}
 					continue;	
 				}
