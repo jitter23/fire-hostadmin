@@ -81,6 +81,7 @@ var hostAdmin = (function(){
 		
 			lines = [];
 			hosts = {};
+			groups = {};
 			//read
 			var host = host_file_wrapper.get();
 			
