@@ -4,7 +4,7 @@ var hostAdmin = (function(){
 
 	var host_file_wrapper = (function(){	
 		var s = {};
-		Components.utils.import("resource://modules/FileIO.jsm", s);
+		Components.utils.import("resource://hostadminmodules/FileIO.jsm", s);
 		
 		const FileIO = s.FileIO;
 		const splitchar = "\n";
@@ -438,7 +438,7 @@ var hostAdmin = (function(){
 					hasCur = true;
 				}
 			}
-			if(!hasCur){
+			if(!hasCur && hasOther){
 				menu.removeChild(menu.lastChild);
 			}
 		}
