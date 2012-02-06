@@ -108,6 +108,10 @@ var hostAdmin = (function(){
 				var tks = l.split(" ");
 
 				if (tks[0] == "#" && tks[1] == "===="){
+					if(group_c == 0){
+						group_id++;
+					}
+
 					if(group_c++ % 2 == 0){
 						tks.splice(0,2);
 						var group_name = "";
@@ -372,43 +376,41 @@ var hostAdmin = (function(){
 		var tosortM = [];
 			
 		for (var h in hosts){
-			if(h != curHost){
-				var sub = document.createElement("menu");
-				sub.setAttribute("label", h);
+			var sub = document.createElement("menu");
+			sub.setAttribute("label", h);
 
-				sub.addEventListener("dblclick", (function(h){ 
-					return function(e){
-							var t = window.getBrowser().addTab(h);
-							window.getBrowser().selectedTab = t;
-						}
-					})(h), false);
-
-				sub.setAttribute("acceltext", h.charAt(0).toUpperCase());
-				var popup = document.createElement("menupopup");
-				sub.appendChild(popup);
-				var hide = true;
-				for (var i in hosts[h]){
-					if(hosts[h][i].comment.toUpperCase() != 'HIDE '){
-						popup.appendChild(mk_menu_item(h, hosts[h][i], i));
-						hasOther = true;
-						hide = false;
+			sub.addEventListener("dblclick", (function(h){ 
+				return function(e){
+						var t = window.getBrowser().addTab(h);
+						window.getBrowser().selectedTab = t;
 					}
+				})(h), false);
 
-					var g = hosts[h][i].group;
-					var gn = group_names[g];
-					if(gn){
-						if(typeof groups[g] == "undefined"){
-							groups[g] = [];
-						}
-						
-						groups[g].push(h);
-					}
+			sub.setAttribute("acceltext", h.charAt(0).toUpperCase());
+			var popup = document.createElement("menupopup");
+			sub.appendChild(popup);
+			var hide = true;
+			for (var i in hosts[h]){
+				if(hosts[h][i].comment.toUpperCase() != 'HIDE '){
+					popup.appendChild(mk_menu_item(h, hosts[h][i], i));
+					hasOther = true;
+					hide = false;
 				}
 
-				if(!hide){
-					tosortKey.push(h);
-					tosortM[h] = sub;
+				var g = hosts[h][i].group;
+				var gn = group_names[g];
+				if(gn){
+					if(typeof groups[g] == "undefined"){
+						groups[g] = [];
+					}
+					
+					groups[g].push(h);
 				}
+			}
+
+			if(!hide && h!= curHost){
+				tosortKey.push(h);
+				tosortM[h] = sub;
 			}
 		}
 		tosortKey = tosortKey.sort()
