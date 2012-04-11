@@ -1,14 +1,15 @@
 var hostAdmin = (function(){
 	
 	const EDITOR_URL = 'chrome://hostadmin/content/editor/hostadmin.html';
+	const PERM_HELP_URL = 'http://code.google.com/p/fire-hostadmin/wiki/GAIN_HOSTS_WRITE_PERM';
 
 	var host_file_wrapper = (function(){	
 		var s = {};
 		Components.utils.import("resource://hostadminmodules/FileIO.jsm", s);
 		
 		const FileIO = s.FileIO;
-		const splitchar = "\n";
 		const os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
+		var splitchar = "\n";
 
 		var charset = "utf8";
 		var file_names = [];
@@ -71,7 +72,7 @@ var hostAdmin = (function(){
 		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
 
 		// copy from http://forums.intermapper.com/viewtopic.php?t=452
-		const ip6_regx = /^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$/ 
+		const ip6_regx = /^((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?$/ ;
 
 		var lines = [];
 		var hosts = {};
@@ -257,7 +258,6 @@ var hostAdmin = (function(){
 			
 			if( t != last_modify){
 				loadhost();
-				last_modify = t;
 				
 				if(typeof Cc !="undefined"){ // when loading
 					var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
@@ -271,9 +271,13 @@ var hostAdmin = (function(){
 					}
 				}
 				
-				var e = document.createEvent('Events');
-				e.initEvent('HostAdminRefresh', false, false);
-				document.dispatchEvent(e);
+				if(last_modify != 0){
+					var e = document.createEvent('Events');
+					e.initEvent('HostAdminRefresh', false, false);
+					document.dispatchEvent(e);
+				}
+
+				last_modify = t;
 
 				return true;
 			}
@@ -292,7 +296,10 @@ var hostAdmin = (function(){
 			group_toggle : group_toggle,
 			group_checked : is_group_all_using,
 			mk_host : mk_host,
-			refresh : refresh
+			refresh : refresh,
+			reset_modified: function(){
+				last_modify = 0;
+			}
 		};
 		
 	})();
@@ -317,16 +324,44 @@ var hostAdmin = (function(){
 		
 		document.getElementById("hostadmin-label").value = str;
 	}
+
+	var wrapped_set = function(data){
+		var r = host_file_wrapper.set(data);
+		if(!r){
+
+			// reset time
+			host_admin.reset_modified();	
+
+			// alert
+			var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+					    .getService(Components.interfaces.nsIAlertsService);
+
+			alertsService.showAlertNotification(null, 'HostAdmin'
+			, 'Write hosts file failed check permissions, Click to Learn more',
+			true, null,{  
+				observe: function(subject, topic, data) {  
+					if(topic == 'alertclickcallback'){
+					var t = window.getBrowser().addTab(PERM_HELP_URL);
+					window.getBrowser().selectedTab = t;
+					}
+				}  
+			});
+		}
+
+		host_refresh.tick();	
+		
+		return r;
+	}
 	
 	var mk_menu_item = function(hostname, host , host_index){
 		var mi = document.createElement("menuitem");
 		mi.setAttribute("label",host.addr);
 		mi.setAttribute("acceltext", host.comment.substr(0,20));
+		mi.setAttribute("description", "Double Click to Visit");
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
 			host_admin.host_toggle(hostname, host_index);
-			host_file_wrapper.set(host_admin.mk_host());
-			host_refresh.tick();	
+			wrapped_set(host_admin.mk_host());
 		}, false);
 		
 		if(host.using){
@@ -342,8 +377,7 @@ var hostAdmin = (function(){
 		mi.setAttribute("type","checkbox");
 		mi.addEventListener("command", function(e){
 			host_admin.group_toggle(host_list, group_id);
-			host_file_wrapper.set(host_admin.mk_host());
-			host_refresh.tick();	
+			wrapped_set(host_admin.mk_host());
 		}, false);
 		if(host_admin.group_checked(host_list, group_id)){
 			mi.setAttribute("checked",true);
@@ -539,10 +573,9 @@ var hostAdmin = (function(){
 				}
 
 				save.addEventListener('click', function(e) {
-					renew();
-					host_file_wrapper.set(codeMirror.getValue());
-					host_refresh.tick();	
-					renew();
+					if(wrapped_set(codeMirror.getValue())){
+						renew();
+					}
 				}, false);
 
 				renew();
