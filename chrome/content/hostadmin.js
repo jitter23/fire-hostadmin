@@ -3,6 +3,27 @@ var hostAdmin = (function(){
 	const EDITOR_URL = 'chrome://hostadmin/content/editor/hostadmin.html';
 	const PERM_HELP_URL = 'http://code.google.com/p/fire-hostadmin/wiki/GAIN_HOSTS_WRITE_PERM';
 
+	var fire_config = (function(){
+		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
+		prefs = prefs.getBranch("extensions.hostadmin.");
+
+		return {
+			get: function(key){
+				if (prefs.prefHasUserValue(key)) {
+					return prefs.getComplexValue(key, Components.interfaces.nsISupportsString).data;
+				}else{
+					return null;
+				}
+			},
+			run_when_not_equal: function(key, value, f){
+				var v = this.get(key);
+				if(v && v != value){
+					f(v);
+				}
+			}
+		};
+	})();
+
 	var host_file_wrapper = (function(){	
 		var s = {};
 		Components.utils.import("resource://hostadminmodules/FileIO.jsm", s);
@@ -14,17 +35,15 @@ var hostAdmin = (function(){
 		var charset = "utf8";
 		var file_names = [];
 
-		var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
-		prefs = prefs.getBranch("extensions.hostadmin.");
-		if (prefs.prefHasUserValue("hostsfilepath")) {
-			var configpath = prefs.getComplexValue("hostsfilepath",	Components.interfaces.nsISupportsString).data;
-			if (configpath != "default") {
-				file_names.push(configpath);
-			}
-		}
+		fire_config.run_when_not_equal("hostsfilepath", "default", function(configpath){
+			file_names.push(configpath);
+		});
 	
+		fire_config.run_when_not_equal("charset", "auto", function(c){
+			charset = c;
+		});
+
 		if (os == "WINNT"){
-			charset = "gbk";
 			splitchar = "\r\n";
 			try {
 				var winDir = Components.classes["@mozilla.org/file/directory_service;1"].
@@ -43,7 +62,8 @@ var hostAdmin = (function(){
 		var file_name;
 		for(var i in file_names){
 			file_name = file_names[i];
-			if(FileIO.open(file_name).exists()){
+			var _f = FileIO.open(file_name);
+			if(_f && _f.exists()){
 				break;
 			}
 		}
