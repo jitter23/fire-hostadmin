@@ -33,6 +33,12 @@ var hostAdmin = (function(){
 		var splitchar = "\n";
 
 		var charset = "utf8";
+	
+		// -- temp for windows before charset detector
+		if (os == "WINNT"){
+			charset = 'gbk';
+		}
+
 		var file_names = [];
 
 		fire_config.run_when_not_equal("hostsfilepath", "default", function(configpath){
@@ -356,7 +362,7 @@ var hostAdmin = (function(){
 			var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
 					    .getService(Components.interfaces.nsIAlertsService);
 
-			alertsService.showAlertNotification(null, 'HostAdmin'
+			alertsService.showAlertNotification('chrome://hostadmin/skin/icon32.png', 'HostAdmin'
 			, 'Write hosts file failed check permissions, Click to Learn more',
 			true, null,{  
 				observe: function(subject, topic, data) {  
@@ -587,12 +593,21 @@ var hostAdmin = (function(){
 
 				var save = doc.getElementById("btnSave");
 
-				var renew = function(){
+				var falseChanged = function(){
 					e.target.defaultView.wrappedJSObject['changed'] = false;
+				}
+
+				var disableButton = function(){
 					save.setAttribute("disabled", "disabled")
 				}
 
+				var renew = function(){
+					falseChanged();
+					disableButton();
+				}
+
 				save.addEventListener('click', function(e) {
+					falseChanged();
 					if(wrapped_set(codeMirror.getValue())){
 						renew();
 					}
