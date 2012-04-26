@@ -27,28 +27,20 @@ var hostAdmin = (function(){
 	var host_file_wrapper = (function(){	
 		var s = {};
 		Components.utils.import("resource://hostadminmodules/FileIO.jsm", s);
-		
+		Components.utils.import("resource://hostadminmodules/jschardet.jsm", s);
+
 		const FileIO = s.FileIO;
+		const jschardet = s.jschardet;
 		const os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 		var splitchar = "\n";
 
-		var charset = "utf8";
 	
-		// -- temp for windows before charset detector
-		if (os == "WINNT"){
-			charset = 'gbk';
-		}
-
 		var file_names = [];
 
 		fire_config.run_when_not_equal("hostsfilepath", "default", function(configpath){
 			file_names.push(configpath);
 		});
 	
-		fire_config.run_when_not_equal("charset", "auto", function(c){
-			charset = c;
-		});
-
 		if (os == "WINNT"){
 			splitchar = "\r\n";
 			try {
@@ -73,7 +65,26 @@ var hostAdmin = (function(){
 				break;
 			}
 		}
-		
+	
+		var charset = "utf8"; // null means auto
+
+		// detect using jschardet
+		// but maybe unqualified
+		if(!charset){
+			// -- temp for windows before charset detector
+			if (os == "WINNT"){
+				charset = 'gbk';
+			}
+
+			//var file = FileIO.open(file_name);
+			//charset = jschardet.detect(FileIO.read(file));
+			//charset = charset ? charset.encoding : "utf8";
+		}
+
+		fire_config.run_when_not_equal("charset", "auto", function(c){
+			charset = c;
+		});
+
 		return {
 			get : function(){
 				var file = FileIO.open(file_name);
@@ -513,16 +524,16 @@ var hostAdmin = (function(){
 	}
 	// }}} refresh menu
 	
-	var onclick = function(event){
-		if(event.button != 0) return false;
+
+	var onclick = function(target, event){
+		if(event.button && event.button != 0) return false;
 
 		host_refresh.tick();	
 		refresh_menu();
 
 		var menu = document.getElementById("hostadmin-popup");
-		var lb = document.getElementById("hostadmin-label");
 
-		menu.openPopup(lb, "before_start", 0 ,0, true);
+		menu.openPopup(target, "before_end", 0 ,0, true);
 		return false;
 	}
 	
@@ -549,6 +560,16 @@ var hostAdmin = (function(){
 	var onload = function(event){
 		host_refresh.tick();	
 		
+		var panel_label = document.getElementById("hostadmin-label");
+		var toolbar_button = document.getElementById("hostadmin-toolbar-button");
+
+		panel_label.addEventListener('mousedown', function(e) {
+			onclick(panel_label, e);
+		});
+		toolbar_button.addEventListener('command', function(e) {
+			onclick(toolbar_button, e);
+		});
+
 		window.getBrowser().addProgressListener({
 				onLocationChange: function(aWebProgress, aRequest, aLocation){
 					curHost = "";
@@ -619,14 +640,14 @@ var hostAdmin = (function(){
 		}, false);
 	}
 	
-	var onpopup = function(){
-		var menu = document.getElementById("hostadmin-popup");
-	}
+	//var onpopup = function(){
+	//	var menu = document.getElementById("hostadmin-popup");
+	//}
 	
 	return {
 		load : onload ,
-		click : onclick,
-		popup : onpopup,
+		// click : onclick,
+		// popup : onpopup,
 		timer: timer //prevent form being gc
 	}
 

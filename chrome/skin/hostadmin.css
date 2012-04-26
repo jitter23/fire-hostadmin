@@ -1,0 +1,8 @@
+#hostadmin-toolbar-button
+{
+  list-style-image: url("chrome://hostadmin/skin/icon32.png");
+}
+[iconsize="small"] #hostadmin-toolbar-button
+{
+list-style-image: url("chrome://hostadmin/skin/icon16.png");
+}

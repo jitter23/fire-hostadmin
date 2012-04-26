@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="chrome://hostadmin/skin/hostadmin.css"?>
 
+<!DOCTYPE overlay >
 <overlay id="hostadmin-overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-	<script src="hostadmin.js"/>
+	<script type="application/javascript" src="chrome://hostadmin/content/hostadmin.js"/>
 
 	<statusbar id="status-bar">
 		<menupopup id="hostadmin-popup">
 		</menupopup>
-		
 		<statusbarpanel id="hostadmin-panel">
-		    <label value="Not in Hosts" id="hostadmin-label" onmousedown="hostAdmin.click(event);"/>
+		    <label value="Not in Hosts" id="hostadmin-label"/>
 		</statusbarpanel>
 	</statusbar>
+
+	<toolbarpalette id="BrowserToolbarPalette">
+		<toolbarbutton id="hostadmin-toolbar-button"/>
+	</toolbarpalette>
+
+	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" />
 </overlay>
