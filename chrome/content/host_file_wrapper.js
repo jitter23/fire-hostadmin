@@ -1,3 +1,9 @@
+// HostAdmin
+// by T.G.(farmer1992@gmail.com)
+//
+// file wrapper module 
+// enable hostadmin read and set hosts file
+//
 (function(hostAdmin){
 
 	var fire_config = (function(){

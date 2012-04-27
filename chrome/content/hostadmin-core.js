@@ -1,7 +1,15 @@
+// HostAdmin
+// by T.G.(farmer1992@gmail.com)
+//
+// core module 
+// implentment of hostadmin syntax
+// http://code.google.com/p/fire-hostadmin/wiki/HOST_SYNTAX
+//
 (function(hostAdmin){
 	
 	var host_file_wrapper = hostAdmin.host_file_wrapper;
-	
+	var refresh_dns = hostAdmin.refresh_dns ? hostAdmin.refresh_dns : function(){};
+
 	var host_admin = (function(){
 		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
 
@@ -185,25 +193,6 @@
 		}
 		
 		var last_modify = 0;
-
-		var refresh_dns = function(){
-			// this funtion learn from addon dnsFlush 
-			// https://addons.mozilla.org/firefox/addon/dns-flusher/
-			// thanks to Marco Tulio
-			// http://code.google.com/p/coderstech/source/browse/trunk/dnsFlusher/chrome/content/dnsFlusher/js/dnsFlusher.js#192
-
-			if(typeof Cc !="undefined"){ // when loading
-				var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
-				try{
-					ioService.offline = true;
-					var cacheService = Components.classes["@mozilla.org/network/cache-service;1"].getService(Components.interfaces.nsICacheService);
-					cacheService.evictEntries(Components.interfaces.nsICache.STORE_ANYWHERE);
-				}catch(e){}
-				finally{
-					ioService.offline = false;
-				}
-			}
-		}
 		
 		// {{{		
 		var refresh = function(){

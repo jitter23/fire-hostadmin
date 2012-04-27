@@ -7,10 +7,9 @@
 window.hostAdmin = {};
 
 (function(){
-	//
-
+	// {{{		
 	// copy from https://developer.mozilla.org/en/Code_snippets/Toolbar
-	 function installButton(toolbarId, id, afterId) {  
+	function installButton(toolbarId, id, afterId) {  
 		 if (!document.getElementById(id)) {  
 			 var toolbar = document.getElementById(toolbarId);  
 
@@ -30,6 +29,7 @@ window.hostAdmin = {};
 				 toolbar.collapsed = false;  
 		 }  
 	 }  
+	 // }}}
 
 
 	var prefs = Components.classes["@mozilla.org/preferences-service;1"].getService(Components.interfaces.nsIPrefService);
