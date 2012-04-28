@@ -8,7 +8,6 @@
 (function(hostAdmin){
 	
 	var host_file_wrapper = hostAdmin.host_file_wrapper;
-	var refresh_dns = hostAdmin.refresh_dns ? hostAdmin.refresh_dns : function(){};
 
 	var host_admin = (function(){
 		const ip_regx = /^((1?\d?\d|(2([0-4]\d|5[0-5])))\.){3}(1?\d?\d|(2([0-4]\d|5[0-5])))$/;
@@ -200,8 +199,6 @@
 			
 			if( t != last_modify){
 				loadhost();
-				
-				refresh_dns();
 				
 				if(last_modify != 0){
 					var e = document.createEvent('Events');

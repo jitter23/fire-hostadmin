@@ -256,7 +256,7 @@
 
 		window.getBrowser().addEventListener('pageshow', function(e){
 			if(e.target && e.target.documentURI == EDITOR_URL){
-				
+
 				var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
 				                              .getService(Components.interfaces.nsIPromptService);
 
@@ -270,9 +270,24 @@
 				
 				codeMirror.setValue(host_file_wrapper.get());
 
+				// limit alert only once per editor
+				doc.alert_mutex = false;
+
+				var mutex_prompt = function(){
+					if(!doc.alert_mutex){
+						doc.alert_mutex = true;
+
+						try{
+							return promptService.confirm(null, 'HostAdmin', 'Hosts file changed, Reload ?');
+						}finally{
+							doc.alert_mutex = false;
+						}
+					}
+					return false;
+				}
+
 				document.addEventListener('HostAdminRefresh', function(e) {
-					// TODO confirm parent ...
-					if(!changed() || promptService.confirm(null, 'HostAdmin', 'Hosts file changed, Reload ?')){	
+					if(!changed() || mutex_prompt()){
 						codeMirror.setValue(host_file_wrapper.get());
 						renew();
 					}
