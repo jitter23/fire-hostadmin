@@ -58,6 +58,17 @@ Editor powered by <a href="http://codemirror.net/" target="_blank">CodeMirror</a
 			document.getElementById("btnSave").removeAttribute("disabled");
 		}
 	});
+
+	document.addEventListener("keydown", function(e){
+		if (e.ctrlKey && e.keyCode == 83){
+			e && e.preventDefault();
+			var e = document.createEvent('MouseEvents');
+			e.initEvent('click', false, false);
+			button = document.getElementById('btnSave');
+			button.dispatchEvent(e);
+		}
+	});
+
 </script>
 </body>
 </html>

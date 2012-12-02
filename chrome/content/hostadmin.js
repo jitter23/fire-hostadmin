@@ -35,19 +35,23 @@
 			host_admin.reset_modified();	
 
 			// alert
-			var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
-					    .getService(Components.interfaces.nsIAlertsService);
 
-			alertsService.showAlertNotification('chrome://hostadmin/skin/icon32.png', 'HostAdmin'
-			, 'Write hosts file failed check permissions, Click to Learn more',
-			true, null,{  
-				observe: function(subject, topic, data) {  
-					if(topic == 'alertclickcallback'){
-					var t = window.getBrowser().addTab(PERM_HELP_URL);
-					window.getBrowser().selectedTab = t;
-					}
-				}  
-			});
+			try{
+				var alertsService = Components.classes["@mozilla.org/alerts-service;1"]
+					    .getService(Components.interfaces.nsIAlertsService);
+			
+
+				alertsService.showAlertNotification('chrome://hostadmin/skin/icon32.png', 'HostAdmin'
+				, 'Write hosts file failed check permissions, Click to Learn more',
+				true, null,{  
+					observe: function(subject, topic, data) {  
+						if(topic == 'alertclickcallback'){
+						var t = window.getBrowser().addTab(PERM_HELP_URL);
+						window.getBrowser().selectedTab = t;
+						}
+					}  
+				});
+			}catch(e){} // mac without growl
 		}
 
 		host_refresh.tick();	
@@ -310,9 +314,11 @@
 				}
 
 				save.addEventListener('click', function(e) {
-					falseChanged();
-					if(wrapped_set(codeMirror.getValue())){
-						renew();
+					if(changed()){
+						falseChanged();
+						if(wrapped_set(codeMirror.getValue())){
+							renew();
+						}
 					}
 				}, false);
 
