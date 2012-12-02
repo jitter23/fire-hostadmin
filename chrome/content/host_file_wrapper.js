@@ -30,10 +30,10 @@
 	var host_file_wrapper = (function(){	
 		var s = {};
 		Components.utils.import("resource://hostadminmodules/FileIO.jsm", s);
-		Components.utils.import("resource://hostadminmodules/jschardet.jsm", s);
+		// Components.utils.import("resource://hostadminmodules/jschardet.jsm", s);
 
 		const FileIO = s.FileIO;
-		const jschardet = s.jschardet;
+		//const jschardet = s.jschardet;
 		const os = Components.classes["@mozilla.org/xre/app-info;1"].getService(Components.interfaces.nsIXULRuntime).OS;
 		var splitchar = "\n";
 
