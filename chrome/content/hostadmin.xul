@@ -18,9 +18,10 @@
 		</statusbarpanel>
 	</statusbar>
 
-	<toolbarpalette id="BrowserToolbarPalette">
-		<toolbarbutton id="hostadmin-toolbar-button"/>
+	<toolbarpalette id="BrowserToolbarPalette" >
+		<toolbarbutton id="hostadmin-toolbar-button" />
 	</toolbarpalette>
 
-	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" />
+	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" class='toolbarbutton-1 chromeclass-toolbar-additional' >
+	</toolbarbutton>
 </overlay>
