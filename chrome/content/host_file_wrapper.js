@@ -48,7 +48,7 @@
 			splitchar = "\r\n";
 			try {
 				var winDir = Components.classes["@mozilla.org/file/directory_service;1"].
-				getService(Components.interfaces.nsIProperties).get("WinD", Components.interfaces.nsILocalFile); 
+				getService(Components.interfaces.nsIProperties).get("WinD", Components.interfaces.nsIFile); 
 				file_names.push(winDir.path + "\\system32\\drivers\\etc\\hosts");
 			}
 			catch (err) {}
