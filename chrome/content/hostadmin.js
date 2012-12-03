@@ -256,7 +256,7 @@
 					}
 
 				},
-			}, Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT );
+			});
 
 		window.getBrowser().addEventListener('pageshow', function(e){
 			if(e.target && e.target.documentURI == EDITOR_URL){
