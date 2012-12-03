@@ -22,6 +22,8 @@
 		<toolbarbutton id="hostadmin-toolbar-button" />
 	</toolbarpalette>
 
-	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" class='toolbarbutton-1 chromeclass-toolbar-additional' >
+	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" type="menu-button" class='toolbarbutton-1 chromeclass-toolbar-additional' >
+		<menupopup id="hostadmin-popup">
+		</menupopup>
 	</toolbarbutton>
 </overlay>
