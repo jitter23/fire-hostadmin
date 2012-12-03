@@ -103,7 +103,7 @@
 		})();
 
 	// {{{ refresh menu
-	var refresh_menu = function(){
+	var refresh_menu = function(asc){
 		var menu = document.getElementById("hostadmin-popup");
 		
 		while (menu.lastChild) menu.removeChild(menu.lastChild);
@@ -171,17 +171,30 @@
 		var hasCur = false;
 		if (typeof hosts[curHost] != "undefined") {
 			if(hasOther){
-				menu.appendChild(document.createElement("menuseparator"));
+				if(asc){
+					menu.insertBefore(document.createElement("menuseparator"), menu.firstChild);
+				}else{
+					menu.appendChild(document.createElement("menuseparator"));
+				}
+
 			}
 			hosts = hosts[curHost];
 			for (var i in hosts){
 				if(hosts[i].comment.toUpperCase() != 'HIDE '){
-					menu.appendChild(mk_menu_item(curHost, hosts[i], i));
+					if(asc){
+						menu.insertBefore(mk_menu_item(curHost, hosts[i], i), menu.firstChild);
+					}else{
+						menu.appendChild(mk_menu_item(curHost, hosts[i], i));
+					}
 					hasCur = true;
 				}
 			}
 			if(!hasCur && hasOther){
-				menu.removeChild(menu.lastChild);
+				if(asc){
+					menu.removeChild(menu.firstChild);
+				}else{
+					menu.removeChild(menu.lastChild);
+				}
 			}
 		}
 
@@ -198,11 +211,11 @@
 		if(event.button && event.button != 0) return false;
 
 		host_refresh.tick();	
-		refresh_menu();
+		refresh_menu(target == document.getElementById('hostadmin-toolbar-button'));
 
 		var menu = document.getElementById("hostadmin-popup");
 
-		menu.openPopup(target, "before_end", 0 ,0, true);
+		menu.openPopup(target, "end_before", 0 ,0, true);
 		return false;
 	}
 	
