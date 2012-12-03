@@ -36,17 +36,13 @@
 			var l = null;
 			var group_id = 0;
 			var group_c = 0;
-			var hide_all_of_below = false;
+			var ingroup = false;
 
 			while(l = regx.exec(host)){
 				l = l[0];
 				
 				lines[l_p++] = l;
 
-				if(hide_all_of_below){
-					continue;
-				}
-				
 				l = l.replace(/^(\s*#)+/,"#");
 				l = l.replace(/#/g," # ");
 				l = l.replace(/^\s+|\s+$/g,"");
@@ -71,14 +67,15 @@
 						}
 
 						groups[group_id] = group_name;
+						ingroup = true;
 					}else{
+						ingroup = false;
 						group_id++;
 					}
 					continue;	
 
 				} else if (tks[0] == "#" && tks[1] && tks[1].toUpperCase() == "HIDE_ALL_OF_BELOW"){
-					hide_all_of_below = true;
-					continue;
+					break;
 				}
 							
 				var using = true;
@@ -118,7 +115,7 @@
 					using : using ,
 					line : l_p - 1,
 					comment : comment,
-					group : group_id
+					group : ingroup ? group_id : 0
 				};
 	
 				for (var i in names){
