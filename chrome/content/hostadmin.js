@@ -46,8 +46,7 @@
 				true, null,{  
 					observe: function(subject, topic, data) {  
 						if(topic == 'alertclickcallback'){
-						var t = window.getBrowser().addTab(PERM_HELP_URL);
-						window.getBrowser().selectedTab = t;
+							opentab('PERMHELP');
 						}
 					}  
 				});
@@ -96,8 +95,7 @@
 			mi.setAttribute("label", "Host Editor");
 
 			mi.addEventListener("command", function(e){
-				var t = window.getBrowser().addTab(EDITOR_URL);
-				window.getBrowser().selectedTab = t;
+				opentab('EDITOR')
 			}, false);
 			return mi;
 		})();
@@ -238,6 +236,20 @@
 	var timer = Components.classes["@mozilla.org/timer;1"].createInstance(Components.interfaces.nsITimer);
 	timer.init(host_refresh, 1000,	Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
 	
+	var opentab = function(t){
+		var url = null;
+		if(t == 'EDITOR'){
+			url = EDITOR_URL;
+		}else if (t == 'PERMHELP'){
+			url = PERM_HELP_URL;
+		}
+
+		if(url){
+			var t = window.getBrowser().addTab(url);
+			window.getBrowser().selectedTab = t;
+			document.getElementById("hostadmin-menu-panel").hidePopup();
+		}
+	}
 
 	var onload = function(event){
 		host_refresh.tick();	
@@ -249,8 +261,10 @@
 		
 		var toolbar_button = document.getElementById("hostadmin-toolbar-button");
 		if(toolbar_button){
+
 			toolbar_button.addEventListener('command', function(e) {
-				onclick(toolbar_button, e);
+				
+				document.getElementById('hostadmin-menu-content').contentWindow.window.init_hostadmin_menu(hostAdmin.core,hostAdmin.host_file_wrapper,curHost, opentab);
 			}, false);
 		}
 
@@ -259,7 +273,10 @@
 					curHost = "";
 					try{
 						if (aLocation && aLocation.host){
-							curHost = aLocation.host;
+							
+							if(aLocation.scheme != 'chrome'){
+								curHost = aLocation.host;
+							}
 						}
 					}
 					catch(e){					

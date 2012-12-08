@@ -6,3 +6,16 @@
 {
 list-style-image: url("chrome://hostadmin/skin/icon16.png");
 }
+
+#hostadmin-menu-content{
+	margin:0;
+	padding:0;
+	border:0;
+}
+#hostadmin-menu-panel{
+	width:322px;
+	height:600px;
+	margin:0;
+	padding:0;
+	border:0;
+}

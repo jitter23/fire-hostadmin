@@ -22,8 +22,13 @@
 		<toolbarbutton id="hostadmin-toolbar-button" />
 	</toolbarpalette>
 
-	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" type="menu-button" class='toolbarbutton-1 chromeclass-toolbar-additional' >
-		<menupopup id="hostadmin-popup">
-		</menupopup>
+	<popupset>
+		<panel id="hostadmin-menu-panel" type="arrow">
+			<iframe id="hostadmin-menu-content" type="content" src="chrome://hostadmin/content/regurgitation/popup.html" flex="1"/>
+		</panel>
+	</popupset>
+	
+	<toolbarbutton id="hostadmin-toolbar-button" label="HostAdmin" tooltiptext="HostAdmin Menu" type="button" class='toolbarbutton-1 chromeclass-toolbar-additional'  popup="hostadmin-menu-panel">
+
 	</toolbarbutton>
 </overlay>
