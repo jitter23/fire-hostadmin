@@ -1,8 +1,0 @@
-content   hostadmin                 chrome/content/
-skin      hostadmin   classic/1.0   chrome/skin/
-locale    hostadmin   en-US         chrome/locale/en-US/
-
-style	chrome://global/content/customizeToolbar.xul	chrome://hostadmin/skin/hostadmin.css
-overlay	chrome://browser/content/browser.xul	chrome://hostadmin/content/hostadmin.xul
-
-resource  hostadminmodules modules/
